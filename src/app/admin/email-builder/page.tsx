@@ -169,7 +169,7 @@ const Field = ({ label, children, span }: { label: any; children: any; span?: an
 
 const inputStyle = {
   width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${B.border}`,
-  fontSize: 14, outline: "none", boxSizing: "border-box" as const, fontFamily: "inherit",
+  fontSize: 14, outline: "none", boxSizing: "border-box" as const, fontFamily: "inherit", color: "#000",
 };
 
 /* ─── Modal ─── */
@@ -189,7 +189,7 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
       onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={{ background: "#fff", borderRadius: 12, padding: 24, width: "90%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 20, margin: 0 }}>{initial ? "✏️ Edit" : "🏠 Add"} Property</h2>
+          <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 20, margin: 0, color: "#374151" }}>{initial ? "✏️ Edit" : "🏠 Add"} Property</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#888" }}>✕</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -265,7 +265,7 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
             <textarea style={{ ...inputStyle, minHeight: 70, resize: "vertical" }} value={f.description}
               onChange={(e) => set("description", e.target.value)} placeholder="A stunning property..." />
             {(() => {
-              const max = 190;
+              const max = 250;
               const remaining = max - (f.description?.length || 0);
               const isOver = remaining < 0;
               return (
@@ -279,7 +279,7 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
           </Field>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
-          <button onClick={onClose} style={{ padding: "8px 20px", borderRadius: 6, border: `1px solid ${B.border}`, background: "#fff", fontSize: 14, cursor: "pointer" }}>Cancel</button>
+          <button onClick={onClose} style={{ padding: "8px 20px", borderRadius: 6, border: `1px solid ${B.border}`, background: "#fff", fontSize: 14, cursor: "pointer", color: "#374151" }}>Cancel</button>
           <button onClick={() => { onSave(f); onClose(); }}
             disabled={!f.dealId || !f.price}
             style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: B.green, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", opacity: (!f.dealId || !f.price) ? 0.5 : 1 }}>
@@ -461,10 +461,20 @@ export default function BrixellEmailBuilder() {
     recipients: "",
   });
   const [emailStatus, setEmailStatus] = useState(null);
+  const [saved, setSaved] = useState(false);
 
   const addProperty = (p) => setProperties((prev) => [...prev, { ...p, id: crypto.randomUUID() }]);
   const updateProperty = (p) => setProperties((prev) => prev.map((x) => x.id === p.id ? p : x));
   const removeProperty = (id) => setProperties((prev) => prev.filter((x) => x.id !== id));
+
+  const saveChanges = useCallback(() => {
+    localStorage.setItem("brixell-properties", JSON.stringify(properties));
+    localStorage.setItem("brixell-activeDeals", JSON.stringify(activeDeals));
+    localStorage.setItem("brixell-newDeals", JSON.stringify(newDeals));
+    localStorage.setItem("brixell-weekLabel", weekLabel);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }, [properties, activeDeals, newDeals, weekLabel]);
 
   const openAdd = () => { setEditingProp(null); setModalOpen(true); };
   const openEdit = (p) => { setEditingProp(p); setModalOpen(true); };
@@ -480,14 +490,6 @@ export default function BrixellEmailBuilder() {
     URL.revokeObjectURL(url);
   }, [properties, activeDeals, newDeals, weekLabel]);
 
-  const [copied, setCopied] = useState(false);
-  const copyHTML = useCallback(() => {
-    const html = generateEmailHTML(properties, activeDeals, newDeals, weekLabel, BRIXELL_LOGO);
-    navigator.clipboard.writeText(html).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [properties, activeDeals, newDeals, weekLabel]);
 
   const btnBase = {
     display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px",
@@ -506,20 +508,26 @@ export default function BrixellEmailBuilder() {
             style={{ ...btnBase, background: editMode ? B.green : "#fff", color: editMode ? "#fff" : "#333", border: editMode ? "none" : `1px solid ${B.border}` }}>
             {editMode ? "👁 Preview" : "✏️ Edit"}
           </button>
+          {!editMode && (
+            <button onClick={saveChanges} style={{ ...btnBase, background: saved ? B.green : "#fff", color: saved ? "#fff" : "#333", border: saved ? "none" : `1px solid ${B.border}` }}>
+              {saved ? "✅ Saved!" : "💾 Save Changes"}
+            </button>
+          )}
           {editMode && (
             <button onClick={openAdd} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.border}` }}>
               🏠 Add Property
             </button>
           )}
-          <button onClick={downloadHTML} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.border}` }}>
-            📥 Download HTML
-          </button>
-          <button onClick={copyHTML} style={{ ...btnBase, background: copied ? B.green : "#fff", color: copied ? "#fff" : "#333", border: copied ? "none" : `1px solid ${B.border}` }}>
-            {copied ? "✅ Copied!" : "📋 Copy HTML"}
-          </button>
-          <button onClick={() => setEmailModalOpen(true)} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.green}` }}>
-            📧 Send Email
-          </button>
+          {editMode && (
+            <button onClick={downloadHTML} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.border}` }}>
+              📥 Download HTML
+            </button>
+          )}
+          {editMode && (
+            <button onClick={() => setEmailModalOpen(true)} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.green}` }}>
+              📧 Send Email
+            </button>
+          )}
         </div>
       </div>
 

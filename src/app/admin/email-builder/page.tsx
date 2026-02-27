@@ -189,15 +189,15 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
       onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={{ background: "#fff", borderRadius: 12, padding: 24, width: "90%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,.2)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 20, margin: 0, color: "#374151" }}>{initial ? "✏️ Edit" : "🏠 Add"} Property</h2>
+          <h2 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 20, margin: 0, color: "#000" }}>{initial ? "✏️ Edit" : "🏠 Add"} Property</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#888" }}>✕</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Field label="Deal ID" span={2}><input style={inputStyle} value={f.dealId} onChange={(e) => set("dealId", e.target.value)} placeholder="1234567" /></Field>
-          <Field label="Street" span={2}><input style={inputStyle} value={f.street} onChange={(e) => set("street", e.target.value)} placeholder="123 Main St" /></Field>
-          <Field label="City"><input style={inputStyle} value={f.city} onChange={(e) => set("city", e.target.value)} placeholder="Miami" /></Field>
+          <Field label="Deal ID *" span={2}><input style={inputStyle} value={f.dealId} onChange={(e) => set("dealId", e.target.value)} placeholder="1234567" /></Field>
+          <Field label="Street *" span={2}><input style={inputStyle} value={f.street} onChange={(e) => set("street", e.target.value)} placeholder="123 Main St" /></Field>
+          <Field label="City *"><input style={inputStyle} value={f.city} onChange={(e) => set("city", e.target.value)} placeholder="Miami" /></Field>
           <Field label="State"><input style={inputStyle} value={f.state} onChange={(e) => set("state", e.target.value)} placeholder="FL" /></Field>
-          <Field label="Price"><input style={inputStyle} value={f.price} onChange={(e) => set("price", e.target.value)} placeholder="$1,200,000" /></Field>
+          <Field label="Price *"><input style={inputStyle} value={f.price} onChange={(e) => set("price", e.target.value)} placeholder="$1,200,000" /></Field>
           <Field label="Tag">
             <select style={inputStyle} value={f.tag} onChange={(e) => set("tag", e.target.value)}>
               <option value="">None</option>
@@ -206,8 +206,8 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
               <option>Hot</option>
             </select>
           </Field>
-          <Field label="Beds"><input style={inputStyle} type="number" value={f.beds} onChange={(e) => set("beds", +e.target.value)} /></Field>
-          <Field label="Baths"><input style={inputStyle} type="number" value={f.baths} onChange={(e) => set("baths", +e.target.value)} /></Field>
+          <Field label="Beds *"><input style={inputStyle} type="number" value={f.beds} onChange={(e) => set("beds", +e.target.value)} /></Field>
+          <Field label="Baths *"><input style={inputStyle} type="number" value={f.baths} onChange={(e) => set("baths", +e.target.value)} /></Field>
           <Field label="Sq Ft"><input style={inputStyle} value={f.sqft} onChange={(e) => set("sqft", e.target.value)} placeholder="3,200" /></Field>
           <Field label="Garage"><input style={inputStyle} type="number" value={f.garage} onChange={(e) => set("garage", +e.target.value)} /></Field>
           <Field label="Basement">
@@ -279,10 +279,10 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
           </Field>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
-          <button onClick={onClose} style={{ padding: "8px 20px", borderRadius: 6, border: `1px solid ${B.border}`, background: "#fff", fontSize: 14, cursor: "pointer", color: "#374151" }}>Cancel</button>
+          <button onClick={onClose} style={{ padding: "8px 20px", borderRadius: 6, border: `1px solid ${B.border}`, background: "#fff", fontSize: 14, cursor: "pointer", color: "#000" }}>Cancel</button>
           <button onClick={() => { onSave(f); onClose(); }}
-            disabled={!f.dealId || !f.price}
-            style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: B.green, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", opacity: (!f.dealId || !f.price) ? 0.5 : 1 }}>
+            disabled={!f.dealId || !f.street || !f.city || !f.price || !f.beds || !f.baths}
+            style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: B.green, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", opacity: (!f.dealId || !f.street || !f.city || !f.price || !f.beds || !f.baths) ? 0.5 : 1 }}>
             {initial ? "Save Changes" : "Add Property"}
           </button>
         </div>
@@ -508,7 +508,7 @@ export default function BrixellEmailBuilder() {
             style={{ ...btnBase, background: editMode ? B.green : "#fff", color: editMode ? "#fff" : "#333", border: editMode ? "none" : `1px solid ${B.border}` }}>
             {editMode ? "👁 Preview" : "✏️ Edit"}
           </button>
-          {!editMode && (
+          {editMode && (
             <button onClick={saveChanges} style={{ ...btnBase, background: saved ? B.green : "#fff", color: saved ? "#fff" : "#333", border: saved ? "none" : `1px solid ${B.border}` }}>
               {saved ? "✅ Saved!" : "💾 Save Changes"}
             </button>
@@ -518,12 +518,12 @@ export default function BrixellEmailBuilder() {
               🏠 Add Property
             </button>
           )}
-          {editMode && (
+          {!editMode && (
             <button onClick={downloadHTML} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.border}` }}>
               📥 Download HTML
             </button>
           )}
-          {editMode && (
+          {!editMode && (
             <button onClick={() => setEmailModalOpen(true)} style={{ ...btnBase, background: "#fff", color: "#333", border: `1px solid ${B.green}` }}>
               📧 Send Email
             </button>

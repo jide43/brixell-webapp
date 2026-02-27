@@ -70,10 +70,10 @@ const EMPTY_PROP = {
 };
 
 /* ─── Date Formatter ─── */
-const fmtDate = (d) => {
+const fmtDate = (d: string) => {
   if (!d) return "";
   const dt = new Date(d + "T00:00:00");
-  return isNaN(dt) ? d : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return isNaN(dt.getTime()) ? d : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
 /* ─── Tag Colors ─── */
@@ -83,7 +83,7 @@ const tagColor = (t) => {
 };
 
 /* ─── Metric Pill ─── */
-const Metric = ({ icon, label, value, valueColor }) => (
+const Metric = ({ icon, label, value, valueColor }: { icon: any; label: any; value: any; valueColor?: any }) => (
   <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, color: B.muted, marginRight: 14, whiteSpace: "nowrap" }}>
     <span style={{ fontSize: 14 }}>{icon}</span>
     <span style={{ fontWeight: 500, color: B.muted }}>{label}</span> <span style={{ fontWeight: 700, color: valueColor || B.greenDark }}>{value}</span>
@@ -102,7 +102,7 @@ const PropertyCard = ({ p, editMode, onEdit, onRemove }) => (
   <div style={{ border: `1px solid ${B.border}`, borderRadius: 10, overflow: "hidden", background: B.white, marginBottom: 20 }}>
     <div style={{ position: "relative" }}>
       <img src={p.image} alt={p.dealId} style={{ width: "100%", height: "auto", maxHeight: 240, objectFit: "cover", objectPosition: p.imagePos || "center center", display: "block" }}
-        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop"; }} />
+        onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop"; }} />
       {p.tag && (
         <span style={{
           position: "absolute", left: 12, top: 12, background: `linear-gradient(135deg, ${tagColor(p.tag)}, ${tagColor(p.tag)}dd)`,
@@ -160,7 +160,7 @@ const PropertyCard = ({ p, editMode, onEdit, onRemove }) => (
 );
 
 /* ─── Form Field ─── */
-const Field = ({ label, children, span }) => (
+const Field = ({ label, children, span }: { label: any; children: any; span?: any }) => (
   <div style={{ gridColumn: span ? `span ${span}` : undefined }}>
     <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</label>
     {children}
@@ -169,7 +169,7 @@ const Field = ({ label, children, span }) => (
 
 const inputStyle = {
   width: "100%", padding: "8px 10px", borderRadius: 6, border: `1px solid ${B.border}`,
-  fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+  fontSize: 14, outline: "none", boxSizing: "border-box" as const, fontFamily: "inherit",
 };
 
 /* ─── Modal ─── */
@@ -235,7 +235,7 @@ const PropertyModal = ({ open, onClose, onSave, initial }) => {
                 <div style={{ fontSize: 11, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Preview (as it will appear on tile)</div>
                 <div style={{ borderRadius: 8, overflow: "hidden", border: `1px solid ${B.border}`, position: "relative" }}>
                   <img src={f.image} alt="Preview" style={{ width: "100%", height: 160, objectFit: "cover", objectPosition: f.imagePos || "center center", display: "block" }}
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop"; }} />
+                    onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop"; }} />
                 </div>
                 <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 11, color: B.muted, fontWeight: 500 }}>Position:</span>
@@ -334,7 +334,7 @@ const generateEmailHTML = (properties, activeDeals, newDeals, weekLabel, logoBas
               ${p.arv ? `📈 <span style="font-weight:500;color:${B.muted};">ARV</span> <span style="font-weight:700;color:${B.greenDark};">${p.arv}</span> &nbsp;&nbsp;` : ""}
               ${p.price ? `🏷️ <span style="font-weight:500;color:${B.muted};">Price</span> <span style="font-weight:700;color:${B.red};">${p.price}</span> &nbsp;&nbsp;` : ""}
               ${p.repairs ? `🔧 <span style="font-weight:500;color:${B.muted};">Repairs</span> <span style="font-weight:700;color:${B.greenDark};">${p.repairs}</span> &nbsp;&nbsp;` : ""}
-              ${p.endDate ? `📅 <span style="font-weight:500;color:${B.muted};">Ends</span> <span style="font-weight:700;color:${B.greenDark};">${(() => { const dt = new Date(p.endDate + "T00:00:00"); return isNaN(dt) ? p.endDate : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" }); })()}</span>` : ""}
+              ${p.endDate ? `📅 <span style="font-weight:500;color:${B.muted};">Ends</span> <span style="font-weight:700;color:${B.greenDark};">${(() => { const dt = new Date(p.endDate + "T00:00:00"); return isNaN(dt.getTime()) ? p.endDate : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" }); })()}</span>` : ""}
             </td></tr>
           </table>` : ""}
           <p style="margin:10px 0 0;padding-top:10px;border-top:1px solid #d4d4d4;font-size:13px;line-height:1.7;color:#6b7280;">${p.description}</p>
@@ -661,7 +661,7 @@ export default function BrixellEmailBuilder() {
                       if (!file) return;
                       const reader = new FileReader();
                       reader.onload = (ev) => {
-                        const text = ev.target.result;
+                        const text = ev.target!.result as string;
                         const emails = text.split(/[\r\n,;]+/)
                           .map(s => s.trim())
                           .filter(s => s && s.includes("@"));
